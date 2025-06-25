@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tixme/const/app_color.dart';
+import 'package:tixme/pages/auth_page/login_page.dart';
+import 'package:tixme/services/auth_service/login_service.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -13,6 +15,60 @@ class ProfilePage extends StatelessWidget {
         backgroundColor: AppColor.primaryColor,
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
+        actions: [
+          IconButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder:
+                    (context) => AlertDialog(
+                      backgroundColor: AppColor.primaryColor,
+                      title: Text(
+                        'Logout',
+                        style: TextStyle(color: AppColor.textColor),
+                      ),
+                      content: Text(
+                        'Apakah kamu yakin ingin keluar?',
+                        style: TextStyle(color: AppColor.textColor),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text(
+                            'Tidak',
+                            style: TextStyle(color: AppColor.textColor),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            await LoginService.logout();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Logout successful'),
+                                backgroundColor: AppColor.accentColor,
+                              ),
+                            );
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => LoginPage(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'Ya, Keluar',
+                            style: TextStyle(color: AppColor.textColor),
+                          ),
+                        ),
+                      ],
+                    ),
+              );
+            },
+            icon: Icon(Icons.logout, color: Colors.white),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),

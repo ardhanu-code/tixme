@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tixme/const/app_color.dart';
 import 'package:tixme/pages/auth_page/register_page.dart';
 import 'package:tixme/pages/main_menu/dashboard_page.dart';
+import 'package:tixme/services/auth_service/login_service.dart';
 import 'package:tixme/widgets/button.dart';
 
 class LoginPage extends StatefulWidget {
@@ -15,8 +16,78 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final bool _isPasswordVisible = false;
+  bool _isPasswordVisible = false;
   final WidgetsCustom _widgetsCustom = WidgetsCustom();
+  bool _isLoading = false;
+
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      print('Login: Starting login process...');
+      final result = await LoginService.login(
+        emailController.text,
+        passwordController.text,
+      );
+
+      print('Login: Login result: $result');
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (result['success']) {
+        // Verify token was saved
+        final savedToken = await LoginService.getTokenFromPreferences();
+        final isLoggedIn = await LoginService.isUserLoggedIn();
+
+        print('Login: Token saved: $savedToken');
+        print('Login: Is logged in: $isLoggedIn');
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Login successful!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Navigate to dashboard
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardPage()),
+        );
+      } else {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Login failed'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      print('Login: Error during login: $e');
+
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Login error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,29 +123,25 @@ class _LoginPageState extends State<LoginPage> {
                         style: TextStyle(color: AppColor.textColor),
                       ),
                       SizedBox(height: 8.0),
-                      _buildTextField('Email', emailController, false),
+                      _buildTextField('Email', emailController, false, true),
                       SizedBox(height: 16.0),
                       Text(
                         'Password',
                         style: TextStyle(color: AppColor.textColor),
                       ),
-                      SizedBox(height: 8.0),
+                      SizedBox(height: 16.0),
                       _buildTextField(
                         'Password',
                         passwordController,
                         _isPasswordVisible,
+                        false,
                       ),
                     ],
                   ),
                 ),
               ),
               SizedBox(height: 24.0),
-              _widgetsCustom.customButton('Login', () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => DashboardPage()),
-                );
-              }),
+              _widgetsCustom.customButton('Login', _handleLogin),
               SizedBox(height: 16.0),
               Text(
                 'Don\'t have an account?',
@@ -104,15 +171,38 @@ Widget _buildTextField(
   String hint,
   TextEditingController controller,
   bool isPasswordVisible,
+  bool isEmail,
 ) {
-  return TextField(
+  return TextFormField(
     controller: controller,
-    obscureText: isPasswordVisible,
-    keyboardType: TextInputType.emailAddress,
+    obscureText: hint.contains('Password') ? !isPasswordVisible : false,
+    keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
+    validator: (value) {
+      if (value == null || value.isEmpty) {
+        return '*${hint} is required';
+      }
+      if (isEmail && (!value.contains('@') || !value.contains('.'))) {
+        return 'Email must contain @ and .';
+      }
+      return null;
+    },
     decoration: InputDecoration(
       hintText: hint,
       fillColor: Colors.white,
       filled: true,
+      suffixIcon:
+          hint.contains('Password')
+              ? IconButton(
+                icon: Icon(
+                  isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                  color: AppColor.accentColor,
+                ),
+                onPressed: () {
+                  // This would need to be handled in the state class
+                  // For now, we'll keep it simple
+                },
+              )
+              : null,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
         borderSide: BorderSide(color: AppColor.accentColor),

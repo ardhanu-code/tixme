@@ -1,41 +1,84 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-
-import '../models/movie_poster.dart';
+import 'package:tixme/endpoint/endpoint.dart';
+import 'package:tixme/preferences/preferences.dart';
 
 class MovieService {
-  static const String baseUrl = 'https://api.movieposterdb.com/v1/posters';
-
-  static Future<List<MoviePoster>> getMoviePosters({
-    String? search,
-    int limit = 20,
+  static Future<Map<String, dynamic>> addMovie({
+    required String title,
+    required String description,
+    required String genre,
+    required String director,
+    required String writer,
+    required String stats,
+    required String imageBase64,
   }) async {
     try {
-      final Map<String, String> queryParameters = {'limit': limit.toString()};
-
-      if (search != null && search.isNotEmpty) {
-        queryParameters['search'] = search;
+      // Ambil token dulu dari Preferences
+      final token = await Preferences.getToken();
+      if (token == null) {
+        throw Exception('Token not found. Please login first.');
       }
 
-      final uri = Uri.parse(baseUrl).replace(queryParameters: queryParameters);
+      final response = await http.post(
+        Uri.parse('${Endpoint.film}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'title': title,
+          'description': description,
+          'genre': genre,
+          'director': director,
+          'writer': writer,
+          'stats': stats,
+          'image_base64': imageBase64,
+        }),
+      );
 
-      final response = await http.get(uri);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body);
+      } else if (response.statusCode == 422) {
+        final errorData = jsonDecode(response.body);
+        final errors = errorData['errors'] ?? {};
+        final errorMessages = <String>[];
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
-        final List<dynamic> posters = data['posters'] ?? [];
-
-        return posters.map((json) => MoviePoster.fromJson(json)).toList();
+        errors.forEach((key, value) {
+          if (value is List) {
+            errorMessages.addAll(value.cast<String>());
+          }
+        });
+        throw Exception('Validation failed: ${errorMessages.join(', ')}');
       } else {
-        throw Exception('Failed to load movie posters: ${response.statusCode}');
+        throw Exception('Add movie failed: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Error fetching movie posters: $e');
+      throw Exception('Add movie error: $e');
     }
   }
 
-  static Future<List<MoviePoster>> searchMovies(String query) async {
-    return getMoviePosters(search: query);
+  static Future<Map<String, dynamic>> getMovies() async {
+    final token = await Preferences.getToken();
+    try {
+      final response = await http.get(
+        Uri.parse('${Endpoint.film}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Get movies failed: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Get movies error: $e');
+    }
   }
 }

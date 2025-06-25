@@ -164,7 +164,7 @@ class DetailsPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  "Stars: ",
+                  "Status: ",
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
