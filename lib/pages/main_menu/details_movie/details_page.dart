@@ -180,7 +180,9 @@ class DetailsPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                _showDialog(context);
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColor.secondaryColor,
                 minimumSize: Size(double.infinity, 50),
@@ -189,7 +191,7 @@ class DetailsPage extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Beli Tiket',
+                'Set jadwal tayang',
                 style: TextStyle(color: AppColor.primaryColor),
               ),
             ),
@@ -198,4 +200,21 @@ class DetailsPage extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder:
+        (context) => AlertDialog(
+          title: Text('Set jadwal tayang'),
+          content: Column(
+            children: [
+              Text('Pilih tanggal tayang'),
+              Text('Pilih jam tayang'),
+              Text('Pilih studio'),
+            ],
+          ),
+        ),
+  );
 }

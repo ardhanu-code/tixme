@@ -6,5 +6,4 @@ class Endpoint {
   static const String schedules = '$baseUrl/schedules';
   static const String film = '$baseUrl/films';
   static const String tickets = '$baseUrl/tickets';
-  
 }

@@ -164,13 +164,15 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                           ),
                         )
                         : GridView.builder(
+                          shrinkWrap: true,
+                          physics: const AlwaysScrollableScrollPhysics(),
                           itemCount: _movies.length,
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
-                                childAspectRatio: 0.7,
-                                mainAxisSpacing: 10,
-                                crossAxisSpacing: 10,
+                                childAspectRatio: 0.8,
+                                mainAxisSpacing: 12,
+                                crossAxisSpacing: 12,
                               ),
                           itemBuilder: (context, index) {
                             final movie = _movies[index];
@@ -221,59 +223,67 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                               },
                               child: Hero(
                                 tag: heroTag,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child:
-                                      imageUrl.isNotEmpty
-                                          ? Image.network(
-                                            imageUrl,
-                                            fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (context, error, stackTrace) =>
-                                                    Center(
-                                                      child: Icon(
-                                                        Icons.broken_image,
-                                                        color:
-                                                            AppColor
-                                                                .secondaryColor,
-                                                        size: 48,
-                                                      ),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: AppColor.accentColor,
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child:
+                                        imageUrl.isNotEmpty
+                                            ? Image.network(
+                                              imageUrl,
+                                              fit: BoxFit.cover,
+                                              width: double.infinity,
+                                              height: double.infinity,
+                                              errorBuilder:
+                                                  (
+                                                    context,
+                                                    error,
+                                                    stackTrace,
+                                                  ) => Center(
+                                                    child: Icon(
+                                                      Icons.broken_image,
+                                                      color:
+                                                          AppColor
+                                                              .secondaryColor,
+                                                      size: 48,
                                                     ),
-                                            loadingBuilder: (
-                                              context,
-                                              child,
-                                              loadingProgress,
-                                            ) {
-                                              if (loadingProgress == null)
-                                                return child;
-                                              return Center(
-                                                child: CircularProgressIndicator(
-                                                  value:
-                                                      loadingProgress
-                                                                  .expectedTotalBytes !=
-                                                              null
-                                                          ? loadingProgress
-                                                                  .cumulativeBytesLoaded /
-                                                              (loadingProgress
-                                                                      .expectedTotalBytes ??
-                                                                  1)
-                                                          : null,
-                                                  color:
-                                                      AppColor.secondaryColor,
-                                                ),
-                                              );
-                                            },
-                                          )
-                                          : Container(
-                                            color: AppColor.accentColor,
-                                            child: Center(
+                                                  ),
+                                              loadingBuilder: (
+                                                context,
+                                                child,
+                                                loadingProgress,
+                                              ) {
+                                                if (loadingProgress == null)
+                                                  return child;
+                                                return Center(
+                                                  child: CircularProgressIndicator(
+                                                    value:
+                                                        loadingProgress
+                                                                    .expectedTotalBytes !=
+                                                                null
+                                                            ? loadingProgress
+                                                                    .cumulativeBytesLoaded /
+                                                                (loadingProgress
+                                                                        .expectedTotalBytes ??
+                                                                    1)
+                                                            : null,
+                                                    color:
+                                                        AppColor.secondaryColor,
+                                                  ),
+                                                );
+                                              },
+                                            )
+                                            : Center(
                                               child: Icon(
                                                 Icons.movie,
                                                 color: AppColor.secondaryColor,
                                                 size: 48,
                                               ),
                                             ),
-                                          ),
+                                  ),
                                 ),
                               ),
                             );

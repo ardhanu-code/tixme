@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tixme/const/app_color.dart';
 import 'package:tixme/pages/auth_page/login_page.dart';
-import 'package:tixme/pages/main_menu/dashboard_page.dart';
+import 'package:tixme/pages/main_menu/main_page/main_page.dart';
 import 'package:tixme/services/auth_service/login_service.dart';
 
 class SplashPage extends StatefulWidget {
